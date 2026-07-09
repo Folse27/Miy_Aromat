@@ -237,7 +237,7 @@
   <p><a href="https://www.instagram.com/miy.aromat" target="_blank" rel="noopener">Instagram: @miy.aromat</a></p>
 </footer>
 
-<script src="products.js"></script>
+<script src="/catalog/products.js"></script>
 <script>
 const DIRECT_URL = "https://ig.me/m/miy.aromat";
 const LOW_STOCK = 2;
@@ -392,7 +392,7 @@ function ensureAllProducts(cb){
   if(allLoaded){ cb(); return; }
   loading.hidden = false;
   const s = document.createElement("script");
-  s.src = "products-all.js";
+  s.src = "/catalog/products-all.js";
   s.onload = ()=>{ allLoaded = true; loading.hidden = true; cb(); };
   s.onerror = ()=>{ loading.textContent = "Не вдалося завантажити повний список — показуємо товари в наявності."; cb(); };
   document.body.appendChild(s);
