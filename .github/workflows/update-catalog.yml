@@ -33,7 +33,7 @@ jobs:
         # optional official APIs; remove these lines if using the free translator
         env:
           DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
-        run: python3 build_catalog.py feed.xml catalog
+        run: python3 catalog/build_catalog.py feed.xml catalog
 
       - name: Commit updated data
         run: |
