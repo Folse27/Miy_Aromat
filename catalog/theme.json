@@ -1,7 +1,7 @@
 {
   "colors": {
-    "ivory": "#e23c3c",
-    "beige": "#5f4f35",
+    "ivory": "#f7f1e6",
+    "beige": "#eadcc6",
     "gold": "#C8A45D",
     "chocolate": "#2A1D16",
     "taupe": "#B8A98F",
@@ -9,10 +9,10 @@
     "photoBg": "#ffffff"
   },
   "sizes": {
-    "title": 39,
-    "cardName": 23,
-    "price": 27,
-    "base": 14
+    "title": 34,
+    "cardName": 19,
+    "price": 22,
+    "base": 15
   },
   "texts": {
     "brand": "Miy Aromat",
