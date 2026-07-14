@@ -40,7 +40,8 @@ jobs:
           rm -f feed.xml
           git config user.name "catalog-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add catalog/products.js catalog/products-all.js catalog/notes_cache.json
+          git rm -q --ignore-unmatch catalog/products-all.js
+          git add catalog/products.js catalog/details catalog/notes_cache.json
           if git diff --cached --quiet; then
             echo "No changes — nothing to commit."
           else
