@@ -1,0 +1,84 @@
+{
+  "colors": {
+    "ivory": "#F7F1E6",
+    "beige": "#EADCC6",
+    "gold": "#C8A45D",
+    "chocolate": "#2A1D16",
+    "taupe": "#B8A98F",
+    "cardBg": "#fffdf9",
+    "photoBg": "#ffffff"
+  },
+  "sizes": {
+    "title": 34,
+    "cardName": 19,
+    "price": 22,
+    "base": 15,
+    "cardMin": 260
+  },
+  "texts": {
+    "brand": "Miy Aromat",
+    "intro": "Знайдіть аромат у каталозі або напишіть нам — перевіримо наявність і допоможемо з підбором.",
+    "intro2": "Асортимент постійно оновлюється",
+    "fbrand": "Miy Aromat",
+    "ftag": "Оригінальна парфумерія · підбір ароматів у Direct",
+    "instaLabel": "Instagram: @miy.aromat",
+    "modalNote": "Просимо надати це посилання при зверненні у Direct — так ми одразу побачимо, який товар вас цікавить."
+  },
+  "links": {
+    "direct": "https://ig.me/m/miy.aromat",
+    "instagram": "https://www.instagram.com/miy.aromat"
+  },
+  "filters": [
+    {
+      "label": "Пробники",
+      "values": [
+        "Пробник"
+      ]
+    },
+    {
+      "label": "Мініатюри",
+      "values": [
+        "Мініатюра"
+      ]
+    },
+    {
+      "label": "Флакони",
+      "values": [
+        "Флакон"
+      ]
+    },
+    {
+      "label": "Тестери",
+      "values": [
+        "Тестер"
+      ]
+    },
+    {
+      "label": "Набори",
+      "values": [
+        "Набір"
+      ]
+    },
+    {
+      "label": "Догляд",
+      "values": [
+        "Догляд",
+        "Парфумований дезодорант",
+        "Парфумований гель",
+        "Парфумований лосьйон",
+        "Парфумований крем",
+        "Парфумований шампунь",
+        "Парфумований спрей",
+        "Спрей для тіла"
+      ]
+    }
+  ],
+  "hidden": {
+    "intro": false,
+    "badge": false,
+    "aromaTags": false,
+    "cardNotes": false,
+    "cardSeason": false,
+    "footer": false
+  }
+}
