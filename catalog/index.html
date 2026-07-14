@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MIY AROMAT — Каталог ароматів</title>
+<!--
+  MIY AROMAT catalog — v4
+  • products.js      — товари в наявності (генерує build_catalog.py)
+  • products-all.js  — повний список, довантажується при "Усі товари"
+  • Direct: https://ig.me/m/miy.aromat · Профіль: https://www.instagram.com/miy.aromat
+-->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ivory:#F7F1E6; --beige:#EADCC6; --gold:#C8A45D;
+    --chocolate:#2A1D16; --taupe:#B8A98F;
+    --card-bg:#fffdf9; --photo-bg:#ffffff;
+    --fs-title:34px; --fs-cname:19px; --fs-price:22px; --fs-base:15px;
+    --gold-soft:rgba(200,164,93,.16);
+    --radius:14px;
+    --serif:"Cormorant Garamond","Didot",Georgia,serif;
+    --sans:"Manrope",-apple-system,"Segoe UI",sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{background:var(--ivory);color:var(--chocolate);font-family:var(--sans);font-size:var(--fs-base);line-height:1.5;min-height:100vh}
+  body.modal-open{overflow:hidden}
+
+  header{text-align:center;padding:36px 20px 8px}
+  .brand{font-family:var(--serif);font-size:var(--fs-title);font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:var(--chocolate)}
+  .brand-rule{width:52px;height:1px;background:var(--gold);margin:18px auto 16px}
+  .intro{max-width:420px;margin:0 auto;color:#5c4b3d;font-size:14px}
+  .intro em{display:block;font-family:var(--serif);font-style:italic;font-size:15px;color:var(--taupe);margin-top:6px}
+
+  .controls{
+    position:sticky;top:0;z-index:10;
+    background:linear-gradient(var(--ivory) 82%, rgba(247,241,230,0));
+    padding:16px 20px 18px;max-width:860px;margin:8px auto 0;
+  }
+  .searchwrap{position:relative}
+  .searchwrap svg{position:absolute;left:16px;top:50%;transform:translateY(-50%);width:16px;height:16px;stroke:var(--taupe);pointer-events:none}
+  #search{
+    width:100%;padding:14px 16px 14px 44px;
+    border:1px solid var(--beige);border-radius:999px;background:#fffdf9;
+    font-family:var(--sans);font-size:15px;color:var(--chocolate);outline:none;
+    transition:border-color .2s, box-shadow .2s;
+  }
+  #search::placeholder{color:var(--taupe)}
+  #search:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-soft)}
+  .filters{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
+  .filters-2{margin-top:9px}
+  .toggle{display:flex;background:var(--beige);border-radius:999px;padding:3px}
+  .toggle button{
+    border:0;background:transparent;padding:7px 14px;border-radius:999px;
+    font-family:var(--sans);font-size:12.5px;font-weight:600;color:#6d5c48;cursor:pointer;transition:all .18s;
+  }
+  .toggle button.active{background:var(--chocolate);color:var(--ivory)}
+  .chip{
+    border:1px solid var(--taupe);background:transparent;color:#6d5c48;
+    padding:7px 14px;border-radius:999px;font-family:var(--sans);
+    font-size:12.5px;font-weight:600;cursor:pointer;transition:all .18s;
+  }
+  .chip.active{border-color:var(--gold);background:var(--gold);color:#fff}
+  .count{font-size:12px;color:var(--taupe);margin-left:auto;letter-spacing:.04em}
+
+  .grid{max-width:860px;margin:6px auto 0;padding:0 20px 10px;display:grid;grid-template-columns:1fr;gap:16px}
+  @media(min-width:560px){.grid{grid-template-columns:repeat(auto-fill, minmax(var(--card-min,260px), 1fr))}}
+
+  .card{
+    background:var(--card-bg);border:1px solid var(--beige);border-radius:var(--radius);
+    overflow:hidden;display:flex;flex-direction:column;
+    transition:box-shadow .2s, transform .2s;
+  }
+  .card:hover{box-shadow:0 8px 26px rgba(42,29,22,.08);transform:translateY(-2px)}
+  .photo{
+    background:var(--photo-bg);
+    aspect-ratio:4/3;position:relative;cursor:pointer;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;
+    border-bottom:1px solid var(--beige);
+  }
+  .photo img{width:100%;height:100%;object-fit:contain;padding:10px}
+  .photo .ph{width:56px;height:76px;opacity:.55}
+  .photo .badge{
+    position:absolute;top:10px;left:10px;background:#fffdf9;border:1px solid var(--beige);
+    color:#6d5c48;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    padding:4px 9px;border-radius:999px;z-index:1;
+  }
+  .body{padding:16px 16px 18px;display:flex;flex-direction:column;flex:1}
+  .body .more-btn{margin-top:14px}
+  .body > .more-btn{margin-top:auto}
+  .cbrand{font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);min-height:14px}
+  .cname{font-family:var(--serif);font-size:var(--fs-cname);font-weight:600;line-height:1.25;margin:3px 0 4px;cursor:pointer}
+  .cmeta{font-size:12.5px;color:var(--taupe)}
+  .aroma-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+  .atag{
+    font-size:10.5px;font-weight:600;letter-spacing:.04em;color:#6d5c48;
+    background:var(--gold-soft);border:1px solid rgba(200,164,93,.3);
+    padding:3px 9px;border-radius:999px;
+  }
+  .row{display:flex;align-items:baseline;justify-content:space-between;margin:12px 0 4px;gap:8px}
+  .price{font-family:var(--serif);font-size:var(--fs-price);font-weight:600;white-space:nowrap}
+  .price small{font-family:var(--sans);font-size:12px;font-weight:600;color:var(--taupe)}
+  .stock{font-size:12px;font-weight:700;letter-spacing:.03em;text-align:right}
+  .stock.in{color:#5a7a4e}.stock.low{color:#a8762a}.stock.out{color:var(--taupe)}
+  .stock i{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;vertical-align:1px}
+  .stock.in i{background:#5a7a4e}.stock.low i{background:#a8762a}.stock.out i{background:var(--taupe)}
+  .notes{font-size:12.5px;color:#6d5c48;border-top:1px solid var(--gold-soft);padding-top:9px;margin-top:6px}
+  .notes b,.season b{font-weight:600;color:var(--taupe);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+  .season{font-size:12px;color:#6d5c48;margin-top:3px}
+  .more-btn{
+    margin-top:14px;width:100%;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:7px;
+    background:transparent;border:1.5px solid var(--gold);color:var(--gold);
+    font-family:var(--sans);font-size:13.5px;font-weight:700;letter-spacing:.04em;
+    padding:12px;border-radius:999px;
+    transition:background .2s, color .2s, transform .15s;
+  }
+  .more-btn:hover{background:var(--gold);color:#fff}
+  .more-btn:active{transform:scale(.98)}
+  .more-btn svg{width:14px;height:14px}
+  .direct{
+    margin-top:14px;display:flex;align-items:center;justify-content:center;gap:8px;
+    background:var(--chocolate);color:var(--ivory);text-decoration:none;
+    font-family:var(--sans);font-size:13.5px;font-weight:600;letter-spacing:.03em;
+    padding:12px;border-radius:999px;transition:background .2s;
+  }
+  .direct:hover{background:#3d2b1f}
+  .direct svg{width:15px;height:15px;flex:none}
+  .card.soldout .photo{filter:grayscale(.5);opacity:.8}
+  .card.soldout .direct{background:transparent;color:var(--chocolate);border:1px solid var(--taupe)}
+  .card.soldout .direct:hover{border-color:var(--gold);color:var(--gold)}
+
+  .loadmore{
+    display:block;margin:6px auto 30px;
+    background:transparent;border:1px solid var(--gold);color:var(--gold);
+    font-family:var(--sans);font-size:13px;font-weight:700;letter-spacing:.05em;
+    padding:12px 34px;border-radius:999px;cursor:pointer;transition:all .2s;
+  }
+  .loadmore:hover{background:var(--gold);color:#fff}
+  .loadmore[hidden]{display:none}
+  .loading-all{text-align:center;font-size:12px;color:var(--taupe);padding:8px 0 4px;letter-spacing:.05em}
+
+  .empty{grid-column:1/-1;text-align:center;padding:56px 20px;color:var(--taupe)}
+  .empty .t{font-family:var(--serif);font-size:22px;color:#6d5c48;margin-bottom:6px}
+  .empty a{color:var(--gold);font-weight:600;text-decoration:none}
+
+  /* ── Modal ──────────────────────────── */
+  .overlay{
+    position:fixed;inset:0;z-index:50;
+    background:rgba(42,29,22,.45);
+    display:none;align-items:flex-end;justify-content:center;
+    padding:0;
+  }
+  .overlay.show{display:flex;animation:ovfade .2s ease}
+  @keyframes ovfade{from{opacity:0}to{opacity:1}}
+  .modal{
+    background:var(--ivory);
+    width:100%;max-width:560px;
+    max-height:92dvh;
+    border-radius:20px 20px 0 0;
+    animation:slideup .25s ease;
+    position:relative;
+    display:flex;flex-direction:column;overflow:hidden;
+  }
+  .m-scroll{overflow-y:auto;flex:1;min-height:0}
+  @media(min-width:600px){
+    .overlay{align-items:center;padding:24px}
+    .modal{border-radius:20px;max-height:88dvh}
+  }
+  @keyframes slideup{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+  .m-close{
+    position:absolute;top:10px;right:10px;
+    display:flex;align-items:center;justify-content:center;
+    width:34px;height:34px;border-radius:50%;
+    background:#fffdf9;border:1px solid var(--beige);color:var(--chocolate);
+    cursor:pointer;z-index:3;
+  }
+  .m-close svg{width:15px;height:15px}
+  .m-photo{
+    background:var(--photo-bg);
+    display:flex;align-items:center;justify-content:center;
+    aspect-ratio:1/1;max-height:340px;width:100%;
+    border-bottom:1px solid var(--beige);
+  }
+  .m-photo{position:relative}
+  .m-photo img{width:100%;height:100%;object-fit:contain;padding:18px}
+  .g-nav{
+    position:absolute;top:50%;transform:translateY(-50%);
+    width:38px;height:38px;border-radius:50%;
+    background:rgba(255,253,249,.92);border:1px solid var(--beige);
+    color:var(--chocolate);font-size:22px;line-height:1;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;z-index:2;
+    transition:background .2s;
+  }
+  .g-nav:hover{background:var(--gold);color:#fff;border-color:var(--gold)}
+  .g-prev{left:10px}.g-next{right:10px}
+  .g-count{
+    position:absolute;bottom:10px;right:12px;z-index:2;
+    background:rgba(42,29,22,.65);color:var(--ivory);
+    font-family:var(--sans);font-size:10.5px;font-weight:700;letter-spacing:.06em;
+    padding:4px 10px;border-radius:999px;
+  }
+  .m-photo .ph{width:70px;height:95px;opacity:.55}
+  .m-foot{
+    flex:none;border-top:1px solid var(--beige);
+    background:var(--ivory);
+    padding:10px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+    box-shadow:0 -6px 16px rgba(42,29,22,.06);
+  }
+  .m-note{
+    background:var(--gold-soft);border:1px solid rgba(200,164,93,.3);
+    border-radius:10px;
+    padding:9px 12px;font-family:var(--sans);
+    font-size:11px;color:#6d5c48;line-height:1.45;
+  }
+  .m-foot .direct{margin-top:10px}
+  .m-note .lnk{
+    display:flex;align-items:center;gap:8px;margin-top:6px;
+  }
+  .m-note input{
+    flex:1;min-width:0;border:1px solid var(--beige);border-radius:8px;
+    background:#fffdf9;padding:6px 9px;font-family:var(--sans);
+    font-size:11px;color:var(--chocolate);
+  }
+  .m-note button{
+    border:1px solid var(--gold);background:transparent;color:var(--gold);
+    font-family:var(--sans);font-size:11px;font-weight:700;
+    padding:6px 12px;border-radius:999px;cursor:pointer;white-space:nowrap;
+  }
+  .m-note button:hover{background:var(--gold);color:#fff}
+  .m-body{padding:20px 22px 26px}
+  .m-brand{font-size:11.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gold)}
+  .m-name{font-family:var(--serif);font-size:26px;font-weight:600;line-height:1.2;margin:4px 0 4px}
+  .m-meta{font-size:13px;color:var(--taupe)}
+  .m-row{display:flex;align-items:baseline;justify-content:space-between;margin:14px 0 6px;gap:10px}
+  .m-price{font-family:var(--serif);font-size:26px;font-weight:600}
+  .m-price small{font-family:var(--sans);font-size:13px;font-weight:600;color:var(--taupe)}
+  .m-block{border-top:1px solid var(--gold-soft);padding-top:10px;margin-top:10px;font-size:13.5px;color:#4a3b2e}
+  .m-block b{display:block;font-weight:600;color:var(--taupe);font-size:11px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px}
+  .m-desc{line-height:1.6}
+  .m-skel .sk{
+    display:block;height:11px;border-radius:5px;margin-top:7px;
+    background:linear-gradient(90deg, var(--beige) 25%, rgba(234,220,198,.45) 50%, var(--beige) 75%);
+    background-size:200% 100%;animation:shimmer 1.2s infinite;
+  }
+  .m-skel .sk.short{width:55%}
+  @keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+  .m-sku{margin-top:14px;font-size:11px;color:var(--taupe);letter-spacing:.06em}
+  .m-direct{margin-top:18px}
+
+  footer{text-align:center;padding:26px 20px 44px;border-top:1px solid var(--beige);max-width:860px;margin:10px auto 0}
+  footer .f-brand{font-family:var(--serif);letter-spacing:.22em;text-transform:uppercase;font-size:14px}
+  footer p{font-size:12px;color:var(--taupe);margin-top:6px}
+  footer a{color:var(--gold);text-decoration:none;font-weight:600}
+  .t-hide-intro .intro{display:none}
+  .t-hide-badge .photo .badge{display:none}
+  .t-hide-aromaTags .aroma-tags{display:none}
+  .t-hide-cardNotes .card .notes{display:none}
+  .t-hide-cardSeason .card .season{display:none}
+  .t-hide-footer footer{display:none}
+  @media (prefers-reduced-motion: reduce){*{transition:none !important;animation:none !important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand" id="t-brand">Miy Aromat</div>
+  <div class="brand-rule"></div>
+  <p class="intro">
+    <span id="t-intro">Знайдіть аромат у каталозі або напишіть нам — перевіримо наявність і допоможемо з підбором.</span>
+    <em id="t-intro2">Асортимент постійно оновлюється</em>
+  </p>
+</header>
+
+<div class="controls">
+  <div class="searchwrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    <input id="search" type="search" placeholder="Пошук: бренд, назва або артикул" autocomplete="off">
+  </div>
+  <div class="filters" id="chips"></div>
+  <div class="filters filters-2">
+    <div class="toggle" role="group" aria-label="Наявність">
+      <button id="tg-in">В наявності</button>
+      <button id="tg-all" class="active">Усі товари</button>
+    </div>
+    <span class="count" id="count"></span>
+  </div>
+</div>
+
+<main class="grid" id="grid"></main>
+<div class="loading-all" id="loading" hidden>Завантажуємо повний список товарів…</div>
+<button class="loadmore" id="loadmore" hidden>Показати ще</button>
+
+<div class="overlay" id="overlay" role="dialog" aria-modal="true">
+  <div class="modal" id="modal"></div>
+</div>
+
+<footer>
+  <div class="f-brand" id="t-fbrand">Miy Aromat</div>
+  <p id="t-ftag">Оригінальна парфумерія · підбір ароматів у Direct</p>
+  <p><a id="t-insta" href="https://www.instagram.com/miy.aromat" target="_blank" rel="noopener">Instagram: @miy.aromat</a></p>
+</footer>
+
+<script src="/catalog/products.js"></script>
+<script>
+const DEFAULT_THEME = {
+  colors:{ivory:"#F7F1E6",beige:"#EADCC6",gold:"#C8A45D",chocolate:"#2A1D16",taupe:"#B8A98F",cardBg:"#fffdf9",photoBg:"#ffffff"},
+  sizes:{title:34,cardName:19,price:22,base:15,cardMin:260},
+  hidden:{intro:false,badge:false,aromaTags:false,cardNotes:false,cardSeason:false,footer:false},
+  texts:{brand:"Miy Aromat",intro:"Знайдіть аромат у каталозі або напишіть нам — перевіримо наявність і допоможемо з підбором.",
+         intro2:"Асортимент постійно оновлюється",fbrand:"Miy Aromat",
+         ftag:"Оригінальна парфумерія · підбір ароматів у Direct",instaLabel:"Instagram: @miy.aromat",
+         modalNote:"Просимо надати це посилання при зверненні у Direct — так ми одразу побачимо, який товар вас цікавить."},
+  links:{direct:"https://ig.me/m/miy.aromat",instagram:"https://www.instagram.com/miy.aromat"},
+  filters:[{label:"Пробники",values:["Пробник"]},{label:"Мініатюри",values:["Мініатюра"]},
+           {label:"Флакони",values:["Флакон"]},{label:"Тестери",values:["Тестер"]},
+           {label:"Набори",values:["Набір"]},
+           {label:"Догляд",values:["Парфумований дезодорант","Парфумований гель","Парфумований лосьйон",
+                                   "Парфумований крем","Парфумований шампунь","Парфумований спрей","Спрей для тіла"]}]
+};
+let THEME = JSON.parse(JSON.stringify(DEFAULT_THEME));
+let DIRECT_URL = THEME.links.direct;
+
+function applyTheme(t){
+  if(!t) return;
+  THEME = {
+    colors:{...DEFAULT_THEME.colors, ...(t.colors||{})},
+    sizes:{...DEFAULT_THEME.sizes, ...(t.sizes||{})},
+    texts:{...DEFAULT_THEME.texts, ...(t.texts||{})},
+    links:{...DEFAULT_THEME.links, ...(t.links||{})},
+    hidden:{...DEFAULT_THEME.hidden, ...(t.hidden||{})},
+    filters:Array.isArray(t.filters)
+      ? t.filters.map(f => ({label:f.label, values: Array.isArray(f.values) ? f.values : (f.form ? [f.form] : [])}))
+      : DEFAULT_THEME.filters
+  };
+  const r = document.documentElement.style, c = THEME.colors, s = THEME.sizes;
+  r.setProperty("--ivory",c.ivory); r.setProperty("--beige",c.beige);
+  r.setProperty("--gold",c.gold); r.setProperty("--chocolate",c.chocolate);
+  r.setProperty("--taupe",c.taupe); r.setProperty("--card-bg",c.cardBg);
+  r.setProperty("--photo-bg",c.photoBg);
+  r.setProperty("--gold-soft", c.gold + "29");
+  r.setProperty("--fs-title",s.title+"px"); r.setProperty("--fs-cname",s.cardName+"px");
+  r.setProperty("--fs-price",s.price+"px"); r.setProperty("--fs-base",s.base+"px");
+  r.setProperty("--card-min",(s.cardMin||260)+"px");
+  const H = THEME.hidden || {};
+  for(const k of ["intro","badge","aromaTags","cardNotes","cardSeason","footer"]){
+    document.documentElement.classList.toggle("t-hide-" + k, !!H[k]);
+  }
+  const T = THEME.texts;
+  document.getElementById("t-brand").textContent = T.brand;
+  document.getElementById("t-intro").textContent = T.intro;
+  document.getElementById("t-intro2").textContent = T.intro2;
+  document.getElementById("t-fbrand").textContent = T.fbrand;
+  document.getElementById("t-ftag").textContent = T.ftag;
+  const ins = document.getElementById("t-insta");
+  ins.textContent = T.instaLabel; ins.href = THEME.links.instagram;
+  document.title = T.brand + " — Каталог ароматів";
+  DIRECT_URL = THEME.links.direct;
+  renderChips();
+  if(window.PRODUCTS) applyFilters();
+}
+
+function renderChips(){
+  const box = document.getElementById("chips");
+  box.innerHTML = THEME.filters.map((f,i) =>
+    `<button class="chip${i===formFilter?" active":""}" data-i="${i}">${esc(f.label)}</button>`).join("");
+  if(formFilter !== null && !THEME.filters[formFilter]) formFilter = null;
+}
+const LOW_STOCK = 2;
+const BATCH = 24;
+
+const grid    = document.getElementById("grid");
+const search  = document.getElementById("search");
+const tgIn    = document.getElementById("tg-in");
+const tgAll   = document.getElementById("tg-all");
+
+const count   = document.getElementById("count");
+const moreBtn = document.getElementById("loadmore");
+const loading = document.getElementById("loading");
+const overlay = document.getElementById("overlay");
+const modal   = document.getElementById("modal");
+
+let onlyInStock = false;   // за замовчуванням показуємо всі товари
+let formFilter  = null;   // індекс активного фільтра
+let filtered    = [];
+let rendered    = 0;
+const DETAILS_SHARDS = 16;
+const shardLoaded = {};
+
+const bottleSVG = `<svg class="ph" viewBox="0 0 60 84" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="24" y="2" width="12" height="10" rx="2" fill="#C8A45D"/>
+  <rect x="26" y="12" width="8" height="8" fill="#B8A98F"/>
+  <rect x="12" y="20" width="36" height="60" rx="8" fill="#C8A45D" fill-opacity=".45"/>
+  <rect x="18" y="40" width="24" height="14" rx="2" fill="#F7F1E6" fill-opacity=".85"/>
+</svg>`;
+
+const fmt = n => Math.round(n).toLocaleString("uk-UA");
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function dataset(){ return window.PRODUCTS || []; }
+
+function stockBlock(p, cls=""){
+  if(p.qty <= 0)  return `<div class="stock out ${cls}"><i></i>Немає в наявності</div>`;
+  if(p.qty <= LOW_STOCK) return `<div class="stock low ${cls}"><i></i>Закінчується</div>`;
+  return `<div class="stock in ${cls}"><i></i>В наявності</div>`;
+}
+
+function photosOf(p){
+  if(Array.isArray(p.photos) && p.photos.length) return p.photos;
+  return p.photo ? [p.photo] : [];
+}
+function imgHTML(p){
+  const ph = photosOf(p)[0];
+  return ph
+    ? `<img loading="lazy" src="${esc(ph)}" alt="${esc(p.name)}" onerror="this.outerHTML='${bottleSVG.replace(/'/g,"\\'").replace(/\n/g,"")}'">`
+    : bottleSVG;
+}
+/* галерея у попапі */
+let gPhotos = [], gIdx = 0;
+function gallerySet(i){
+  if(!gPhotos.length) return;
+  gIdx = (i + gPhotos.length) % gPhotos.length;
+  const img = modal.querySelector(".g-img");
+  const cnt = modal.querySelector(".g-count");
+  if(img) img.src = gPhotos[gIdx];
+  if(cnt) cnt.textContent = (gIdx+1) + " / " + gPhotos.length;
+}
+function galleryHTML(p, photos){
+  gPhotos = photos || photosOf(p); gIdx = 0;
+  if(!gPhotos.length) return `<div class="m-photo">${bottleSVG}</div>`;
+  const nav = gPhotos.length > 1 ? `
+    <button class="g-nav g-prev" type="button" aria-label="Попереднє фото">‹</button>
+    <button class="g-nav g-next" type="button" aria-label="Наступне фото">›</button>
+    <div class="g-count">1 / ${gPhotos.length}</div>` : "";
+  return `<div class="m-photo">
+    <img class="g-img" src="${esc(gPhotos[0])}" alt="${esc(p.name)}" onerror="this.outerHTML='${bottleSVG.replace(/'/g,"\\'").replace(/\n/g,"")}'">
+    ${nav}
+  </div>`;
+}
+
+function directMsg(p){
+  return `Мене цікавить товар ${p.name}` + (p.sku ? ` з артикулом: ${p.sku}` : "");
+}
+function directBtn(p, extra="", label){
+  const msg = directMsg(p);
+  const href = DIRECT_URL + "?text=" + encodeURIComponent(msg);
+  const text = label || (p.qty > 0 ? "Замовити / уточнити в Direct" : "Уточнити наявність у Direct");
+  return `<a class="direct ${extra}" href="${esc(href)}" data-msg="${esc(msg)}" target="_blank" rel="noopener" aria-label="Написати в Instagram Direct">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+    ${text}
+  </a>`;
+}
+
+function cardHTML(p, idx){
+  return `
+  <article class="card ${p.qty <= 0 ? "soldout" : ""}" data-idx="${idx}">
+    <div class="photo">
+      <span class="badge">${esc(p.form)}</span>
+      ${imgHTML(p)}
+    </div>
+    <div class="body">
+      <div class="cbrand">${esc(p.brand)}</div>
+      <h2 class="cname">${esc(p.name)}</h2>
+      <div class="cmeta">${esc(p.vol)}${p.vol && p.type ? " · " : ""}${esc(p.type)}</div>
+      ${p.aroma?.length ? `<div class="aroma-tags">${p.aroma.slice(0,3).map(a=>`<span class="atag">${esc(a)}</span>`).join("")}</div>` : ""}
+      <div class="row">
+        <div class="price">${fmt(p.price)} <small>грн</small></div>
+        ${stockBlock(p)}
+      </div>
+      ${p.notes ? `<div class="notes"><b>Ноти:</b> ${esc(p.notes)}</div>` : ""}
+      ${p.season ? `<div class="season"><b>Сезон:</b> ${esc(p.season)}</div>` : ""}
+      <button class="more-btn" type="button">Детальніше
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+  </article>`;
+}
+
+function productLink(p){
+  return location.origin + "/catalog/?product=" + encodeURIComponent(p.id);
+}
+function openModal(p, fromNav){
+  modal.dataset.id = String(p.id);
+  if(!fromNav){
+    const u = new URL(location.href);
+    u.searchParams.set("product", p.id);
+    history.pushState({product:p.id, fromCatalog:true}, "", u);
+  }
+  modal.innerHTML = `
+    <button class="m-close" aria-label="Закрити">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+    <div class="m-scroll">
+    ${galleryHTML(p)}
+    <div class="m-body">
+      <div class="m-brand">${esc(p.brand)}</div>
+      <div class="m-name">${esc(p.name)}</div>
+      <div class="m-meta">${esc(p.vol)}${p.vol && p.type ? " · " : ""}${esc(p.type)}${p.form ? " · " + esc(p.form) : ""}</div>
+      ${p.aroma?.length ? `<div class="aroma-tags">${p.aroma.map(a=>`<span class="atag">${esc(a)}</span>`).join("")}</div>` : ""}
+      <div class="m-row">
+        <div class="m-price">${fmt(p.price)} <small>грн</small></div>
+        ${stockBlock(p)}
+      </div>
+      ${p.notes ? `<div class="m-block"><b>Ноти</b>${esc(p.notes)}</div>` : ""}
+      ${p.season ? `<div class="m-block"><b>Сезон</b>${esc(p.season)}</div>` : ""}
+      <div class="m-desc-slot"><div class="m-block m-skel"><b>Опис</b><span class="sk"></span><span class="sk"></span><span class="sk short"></span></div></div>
+      ${p.sku ? `<div class="m-sku">Артикул: ${esc(p.sku)}</div>` : ""}
+    </div>
+    </div>
+    <div class="m-foot">
+      <div class="m-note">
+        ${esc(THEME.texts.modalNote)}
+        <div class="lnk">
+          <input type="text" readonly value="${esc(productLink(p))}" onclick="this.select()">
+          <button type="button" class="copy-link">Копіювати</button>
+        </div>
+      </div>
+      ${directBtn(p, "", "Написати в Direct")}
+    </div>`;
+  overlay.classList.add("show");
+  document.body.classList.add("modal-open");
+  hydrate(p);
+}
+
+/* довантажуємо опис і додаткові фото та вставляємо у вже відкриту картку */
+function hydrate(p){
+  const cached = detailsOf(p);
+  if(cached){ fillDetails(p, cached); return; }
+  loadDetails(p.id).then(()=>{
+    if(!overlay.classList.contains("show")) return;
+    if(modal.dataset.id !== String(p.id)) return;   // встигли відкрити інший товар
+    fillDetails(p, detailsOf(p) || {desc:"", photos: photosOf(p)});
+  });
+}
+function fillDetails(p, d){
+  const slot = modal.querySelector(".m-desc-slot");
+  if(slot){
+    slot.innerHTML = d.desc
+      ? `<div class="m-block"><b>Опис</b><div class="m-desc">${esc(d.desc)}</div></div>`
+      : "";
+  }
+  if(d.photos && d.photos.length > 1){
+    const box = modal.querySelector(".m-photo");
+    if(box){
+      gPhotos = d.photos; gIdx = 0;
+      if(!box.querySelector(".g-nav")){
+        box.insertAdjacentHTML("beforeend", `
+          <button class="g-nav g-prev" type="button" aria-label="Попереднє фото">‹</button>
+          <button class="g-nav g-next" type="button" aria-label="Наступне фото">›</button>
+          <div class="g-count">1 / ${d.photos.length}</div>`);
+      }
+      const img = box.querySelector("img");
+      if(img) img.classList.add("g-img");
+    }
+  }
+}
+function closeModal(fromNav){
+  overlay.classList.remove("show");
+  document.body.classList.remove("modal-open");
+  if(!fromNav && history.state && history.state.product){
+    if(history.state.fromCatalog){
+      history.back();                 // відкрито з каталогу — крок назад повертає до списку
+    }else{
+      const u = new URL(location.href);   // відкрито за прямим посиланням — просто прибираємо параметр
+      u.searchParams.delete("product");
+      history.replaceState({}, "", u);
+    }
+  }
+}
+window.addEventListener("popstate", e=>{
+  if(e.state && e.state.product){
+    openById(String(e.state.product), true);
+  }else if(overlay.classList.contains("show")){
+    closeModal(true);
+  }
+});
+function findById(id){
+  return (window.PRODUCTS||[]).find(x=>String(x.id)===id);
+}
+function openById(id, fromNav){
+  const p = findById(id);
+  if(p) openModal(p, fromNav);
+}
+modal.addEventListener("click", e=>{
+  if(e.target.closest(".g-prev")){ gallerySet(gIdx - 1); return; }
+  if(e.target.closest(".g-next")){ gallerySet(gIdx + 1); return; }
+});
+document.addEventListener("keydown", e=>{
+  if(!overlay.classList.contains("show") || gPhotos.length < 2) return;
+  if(e.key === "ArrowLeft") gallerySet(gIdx - 1);
+  if(e.key === "ArrowRight") gallerySet(gIdx + 1);
+});
+/* копіювання посилання на товар */
+modal.addEventListener("click", e=>{
+  const b = e.target.closest(".copy-link");
+  if(!b) return;
+  const inp = modal.querySelector(".m-note input");
+  inp.select();
+  const done = ()=>{ b.textContent = "Скопійовано ✓"; setTimeout(()=>b.textContent="Копіювати", 2000); };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(inp.value).then(done).catch(()=>{ document.execCommand("copy"); done(); });
+  }else{ document.execCommand("copy"); done(); }
+});
+overlay.addEventListener("click", e=>{
+  if(e.target === overlay || e.target.closest(".m-close")) closeModal();
+});
+document.addEventListener("keydown", e=>{ if(e.key === "Escape") closeModal(); });
+
+function applyFilters(){
+  const q = search.value.trim().toLowerCase();
+  filtered = dataset().filter(p=>{
+    if(onlyInStock && p.qty <= 0) return false;
+    if(formFilter !== null){
+      const vals = THEME.filters[formFilter]?.values || [];
+      if(!vals.includes(p.form) && !vals.includes(p.type)) return false;
+    }
+    if(q){
+      const hay = (p.brand+" "+p.name+" "+p.sku).toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  });
+  rendered = 0;
+  grid.innerHTML = "";
+  count.textContent = filtered.length ? filtered.length.toLocaleString("uk-UA") + " позицій" : "";
+  if(!filtered.length){
+    grid.innerHTML = `<div class="empty">
+      <div class="t">Нічого не знайшли</div>
+      Спробуйте іншу назву або <a href="${DIRECT_URL}" target="_blank" rel="noopener">напишіть нам у Direct</a> — перевіримо наявність.
+    </div>`;
+    moreBtn.hidden = true;
+    return;
+  }
+  renderBatch();
+}
+
+function renderBatch(){
+  const slice = filtered.slice(rendered, rendered + BATCH);
+  grid.insertAdjacentHTML("beforeend", slice.map((p,i)=>cardHTML(p, rendered+i)).join(""));
+  rendered += slice.length;
+  moreBtn.hidden = rendered >= filtered.length;
+}
+
+new IntersectionObserver(entries=>{
+  if(entries[0].isIntersecting && !moreBtn.hidden) renderBatch();
+},{rootMargin:"600px"}).observe(moreBtn);
+moreBtn.addEventListener("click", renderBatch);
+
+/* деталі товару (опис + додаткові фото) вантажимо лише коли відкривають картку */
+function shardOf(id){
+  const n = parseInt(id, 10);
+  return (isNaN(n) ? 0 : Math.abs(n % DETAILS_SHARDS));
+}
+function loadDetails(id){
+  const n = shardOf(id);
+  if(shardLoaded[n]) return shardLoaded[n];
+  shardLoaded[n] = new Promise(res=>{
+    const s = document.createElement("script");
+    s.src = "/catalog/details/d" + n + ".js";
+    s.onload = () => res(true);
+    s.onerror = () => res(false);
+    document.body.appendChild(s);
+  });
+  return shardLoaded[n];
+}
+function detailsOf(p){
+  const d = window.DETAILS && window.DETAILS[p.id];
+  return d ? {desc: d.d || "", photos: (d.p && d.p.length ? d.p : (p.photo ? [p.photo] : []))}
+           : null;
+}
+
+let deb;
+search.addEventListener("input", ()=>{ clearTimeout(deb); deb = setTimeout(applyFilters, 150); });
+tgIn.addEventListener("click", ()=>{
+  onlyInStock = true;
+  tgIn.classList.add("active"); tgAll.classList.remove("active");
+  applyFilters();
+});
+tgAll.addEventListener("click", ()=>{
+  onlyInStock = false;
+  tgAll.classList.add("active"); tgIn.classList.remove("active");
+  applyFilters();
+});
+document.getElementById("chips").addEventListener("click", e=>{
+  const ch = e.target.closest(".chip");
+  if(!ch) return;
+  const i = +ch.dataset.i;
+  formFilter = (formFilter === i) ? null : i;
+  document.querySelectorAll("#chips .chip").forEach((c,j)=>c.classList.toggle("active", j===formFilter));
+  applyFilters();
+});
+
+grid.addEventListener("click", e=>{
+  const hit = e.target.closest(".more-btn, .cname, .photo");
+  if(!hit) return;
+  const card = hit.closest(".card");
+  const p = filtered[+card.dataset.idx];
+  if(p) openModal(p);
+});
+
+
+applyFilters();
+
+/* тема: підвантажуємо опубліковані налаштування */
+const IS_PREVIEW = new URLSearchParams(location.search).has("preview");
+fetch("/catalog/theme.json?ts=" + Date.now())
+  .then(r => r.ok ? r.json() : null)
+  .then(t => { if(t) applyTheme(t); afterTheme(); })
+  .catch(afterTheme);
+
+function afterTheme(){
+  /* режим попереднього перегляду для адмін-панелі */
+  if(IS_PREVIEW){
+    window.addEventListener("message", e=>{
+      if(e.data && e.data.type === "miy-theme") applyTheme(e.data.theme);
+    });
+    try{ parent.postMessage({type:"miy-preview-ready"}, "*"); }catch(_){}
+  }
+  /* глибоке посилання на товар */
+  const pid = new URLSearchParams(location.search).get("product");
+  if(pid){
+    history.replaceState({product:pid, fromCatalog:false}, "", location.href);
+    openById(pid, true);
+  }
+}
+</script>
+</body>
+</html>
